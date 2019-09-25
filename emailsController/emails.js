@@ -81,13 +81,29 @@ class EmailsController {
   }
 
   sendEmail(email, cb) {
-    EmailController.sendPostmarkEmail(email, function(response, body) {
-      if(response.statusCode < 200 || response.statusCode > 299) {
-        EmailController.sendSendGridEmail(email, cb);
-      } else {
-        cb(response, body);
+    
+    switch(process.env.DEFAULT_EMAIL_SERVICE) {
+      case 'postmark' : {
+        EmailController.sendPostmarkEmail(email, function(response, body) {
+          if(response.statusCode < 200 || response.statusCode > 299) {
+            EmailController.sendSendGridEmail(email, cb);
+          } else {
+            cb(response, body);
+          }
+        });
+        break;
       }
-    });
+
+      default : {
+        EmailController.sendSendGridEmail(email, function(response, body) {
+          if(response.statusCode < 200 || response.statusCode > 299) {
+            EmailController.sendPostmarkEmail(email, cb);
+          } else {
+            cb(response, body);
+          }
+        });
+      }
+    }
   }
 
   //TODO: Better html handling
@@ -114,13 +130,12 @@ class EmailsController {
 
     //SEND email
     EmailController.sendEmail(email, function(response, body) {
-      
-      var success = false;
+      var emailSent = false;
       if(response.statusCode < 300 && response.statusCode > 199) {
-            success = true;
+            emailSent = true;
       }
       return res.status(response.statusCode).send({
-          success: success,
+          success: emailSent,
           message: body,
           email
       });

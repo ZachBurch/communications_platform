@@ -16,6 +16,7 @@ Navigate to `.\communications_platform`. You will need to setup your enviroment:
 	
 
 	$ echo "export PORT='----WHATEVER-PORT-YOU-WANT----'" > dev.env
+	$ echo "export DEFAULT_EMAIL_SERVICE='postmark'" >> dev.env
 	
 	$ echo "export SENDGRID_URL='https://api.sendgrid.com/v3/mail/send'" >> dev.env
 	$ echo "export SENDGRID_API_KEY='----YOUR-SENDGRID-API-KEY----'" >> dev.env
