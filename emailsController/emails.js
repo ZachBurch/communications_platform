@@ -1,12 +1,11 @@
 /* eslint-disable class-methods-use-this */
-import htmlToText from 'html-to-text';
 import request from 'request';
 const { check, validationResult } = require('express-validator/check');
 
 
 class EmailsController {
   
-  //TODO: fix validation double error on email fields 
+
   validate(type) {
     switch(type) {
       case 'createEmail' : {
@@ -23,16 +22,19 @@ class EmailsController {
   }
 
   formatSendGridBody(email) {
-    var jsonString = "{\"personalizations\":[{\"to\":[{";
-    jsonString += "\"email\":\"" + email.to + "\",";
-    jsonString += "\"name\":\"" + email.to_name + "\"}],";
-    jsonString += "\"subject\":\"" + email.subject + "\"}],";
-    jsonString += "\"content\":[{";
-    jsonString += "\"type\":\"text/plain\",";
-    jsonString += "\"value\":\"" + email.body + "\"}],";
-    jsonString += "\"from\":{";
-    jsonString += "\"email\":\"" + email.from + "\",";
-    jsonString += "\"name\":\"" + email.from_name + "\"}}";
+    var jsonString = "";
+    if(email != null) {
+      jsonString = "{\"personalizations\":[{\"to\":[{";
+      jsonString += "\"email\":\"" + email.to + "\",";
+      jsonString += "\"name\":\"" + email.to_name + "\"}],";
+      jsonString += "\"subject\":\"" + email.subject + "\"}],";
+      jsonString += "\"content\":[{";
+      jsonString += "\"type\":\"text/plain\",";
+      jsonString += "\"value\":\"" + email.body + "\"}],";
+      jsonString += "\"from\":{";
+      jsonString += "\"email\":\"" + email.from + "\",";
+      jsonString += "\"name\":\"" + email.from_name + "\"}}";
+    }
     return jsonString;
   }
 
@@ -53,13 +55,16 @@ class EmailsController {
   }
 
   formatPostmarkBody(email) {
-    var jsonString = "{";
-    jsonString += "\"From\":\"" + email.from + "\",";
-    jsonString += "\"To\":\"" + email.to + "\",";
-    jsonString += "\"Subject\":\"" + email.subject + "\",";
-    jsonString += "\"HtmlBody\":\"" + email.html_body + "\",";
-    jsonString += "\"TextBody\":\"" + email.body + "\"";
-    jsonString += "}";
+    var jsonString = "";
+    if(email != null) {
+      jsonString = "{";
+      jsonString += "\"From\":\"" + email.from + "\",";
+      jsonString += "\"To\":\"" + email.to + "\",";
+      jsonString += "\"Subject\":\"" + email.subject + "\",";
+      jsonString += "\"HtmlBody\":\"" + email.html_body + "\",";
+      jsonString += "\"TextBody\":\"" + email.body + "\"";
+      jsonString += "}";
+    }
     return jsonString;
   }
 
@@ -81,7 +86,6 @@ class EmailsController {
   }
 
   sendEmail(email, cb) {
-    
     switch(process.env.DEFAULT_EMAIL_SERVICE) {
       case 'postmark' : {
         EmailController.sendPostmarkEmail(email, function(response, body) {
@@ -128,11 +132,14 @@ class EmailsController {
       body: req.body.body.replace(/<[^>]*>?/gm, '') 
     };
 
+    //save email to db with extra fields processed and service_used 
+
     //SEND email
     EmailController.sendEmail(email, function(response, body) {
       var emailSent = false;
       if(response.statusCode < 300 && response.statusCode > 199) {
             emailSent = true;
+            //update the email db at this point
       }
       return res.status(response.statusCode).send({
           success: emailSent,
