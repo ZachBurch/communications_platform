@@ -41,6 +41,9 @@ Navigate to `..\communications_platform`. You will need to setup your enviroment
 
     $ npm run start
 
+    Then start sending POST requests to http://localhost:----WHATEVER-PORT-YOU-WANT----/emails.
+    If a PORT is not specified in your environment variables then it will default to 8080.
+
 ## Testing the project
 
 	$ npm test
